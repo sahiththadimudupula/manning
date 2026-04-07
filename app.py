@@ -96,146 +96,200 @@ TEXT_COLUMNS = [
 st.markdown(
     """
     <style>
-        header[data-testid="stHeader"] {
+        :root {
+            --primary: #1e3a8a;
+            --primary-2: #2563eb;
+            --primary-3: #38bdf8;
+            --accent: #0f172a;
+            --bg: #f5f7fb;
+            --bg-soft: #eef4ff;
+            --surface: rgba(255, 255, 255, 0.78);
+            --surface-strong: rgba(255, 255, 255, 0.92);
+            --text-1: #0f172a;
+            --text-2: #334155;
+            --text-3: #64748b;
+            --border: rgba(148, 163, 184, 0.22);
+            --border-strong: rgba(37, 99, 235, 0.20);
+            --shadow-xs: 0 4px 14px rgba(15, 23, 42, 0.04);
+            --shadow-sm: 0 10px 30px rgba(15, 23, 42, 0.07);
+            --shadow-md: 0 18px 48px rgba(15, 23, 42, 0.10);
+            --shadow-lg: 0 24px 60px rgba(30, 58, 138, 0.14);
+        }
+
+        html, body, [class*="css"] {
+            font-family: "Inter", "Segoe UI", sans-serif;
+        }
+
+        header,
+        [data-testid="stHeader"],
+        [data-testid="stToolbar"],
+        .stAppToolbar,
+        #MainMenu,
+        footer,
+        [data-testid="stDecoration"],
+        [data-testid="stStatusWidget"] {
             display: none !important;
             height: 0 !important;
-        }
-
-        div[data-testid="stToolbar"] {
-            display: none !important;
-        }
-
-        .stAppToolbar {
-            display: none !important;
-        }
-
-        #MainMenu {
             visibility: hidden !important;
         }
 
-        footer {
-            visibility: hidden !important;
+        .stApp {
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.10), transparent 24%),
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 28%),
+                linear-gradient(180deg, #f6f8fc 0%, #f3f7ff 48%, #edf4ff 100%);
+            color: var(--text-1);
         }
 
-        div[data-testid="stDecoration"] {
-            display: none !important;
-        }
-
-        div[data-testid="stStatusWidget"] {
-            display: none !important;
-        }
-
-        [data-testid="stAppViewContainer"] {
+        /* top spacing remove */
+        [data-testid="stAppViewContainer"],
+        [data-testid="stAppViewContainer"] > section,
+        [data-testid="stAppViewContainer"] > section > div:first-child,
+        section.main,
+        section.main > div {
             padding-top: 0 !important;
             margin-top: 0 !important;
         }
 
-        section.main > div {
-            padding-top: 0 !important;
-        }
-
-        .main .block-container,
-        .block-container {
+        .block-container,
+        .main .block-container {
             max-width: 1540px;
-            padding-top: 0 !important;
+            padding-top: 0.08rem !important;
             padding-bottom: 1rem !important;
             margin-top: 0 !important;
         }
 
-        .main .block-container > div:first-child {
+        /* remove top bars / placeholders */
+        [data-testid="stSkeleton"],
+        .stSkeleton,
+        .st-emotion-cache-z5fcl4,
+        .st-emotion-cache-1wmy9hl,
+        .st-emotion-cache-18ni7ap,
+        .st-emotion-cache-1r6slb0 {
             display: none !important;
         }
 
-        div[data-testid="stVerticalBlock"]:empty {
+        div[data-testid="stVerticalBlock"] > div:empty,
+        div[data-testid="stVerticalBlockBorderWrapper"]:empty,
+        div[data-testid="stMarkdownContainer"]:empty,
+        .element-container:empty,
+        .main .block-container > div:first-child > div:first-child:empty {
             display: none !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         .element-container {
-            margin-bottom: 0.3rem !important;
+            margin-bottom: 0.25rem !important;
         }
 
         hr {
             display: none !important;
         }
 
-        .stApp {
-            background: linear-gradient(180deg, #f3f6fb 0%, #f8fbff 45%, #ffffff 100%);
+        /* extra kill for first unwanted top elements */
+        .block-container > div:first-child > div:first-child,
+        .block-container > div:first-child > div:nth-child(2) {
             margin-top: 0 !important;
-        }
-
-        .element-container:has(style) {
-            display: none !important;
+            padding-top: 0 !important;
         }
 
         label[data-testid="stWidgetLabel"] p {
-            color: #0f172a !important;
+            color: var(--text-1) !important;
             font-weight: 700 !important;
-            font-size: 0.92rem !important;
+            font-size: 0.90rem !important;
         }
 
         div[data-testid="stTabs"] {
-            margin-top: 0.1rem;
+            margin-top: 0.10rem;
+        }
+
+        div[data-testid="stTabs"] [role="tablist"] {
+            gap: 0.35rem;
+            background: rgba(255,255,255,0.55);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            padding: 0.35rem;
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-xs);
         }
 
         div[data-testid="stTabs"] button {
             font-weight: 700;
-            font-size: 0.95rem;
-            padding: 0.65rem 0.9rem;
-            color: #334155 !important;
-            border-radius: 12px 12px 0 0;
+            font-size: 0.92rem;
+            padding: 0.62rem 0.9rem;
+            color: var(--text-2) !important;
+            border-radius: 12px !important;
+            transition: all 0.22s ease;
+        }
+
+        div[data-testid="stTabs"] button:hover {
+            background: rgba(37, 99, 235, 0.08) !important;
+            color: var(--primary-2) !important;
         }
 
         div[data-testid="stTabs"] button[aria-selected="true"] {
-            color: #0f4c81 !important;
+            background: linear-gradient(135deg, rgba(30,58,138,0.96) 0%, rgba(37,99,235,0.96) 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
         }
 
         div[data-testid="stTabs"] button p {
             color: inherit !important;
         }
 
-        div[data-baseweb="select"] > div {
+        div[data-baseweb="select"] > div,
+        .stTextInput > div > div > input {
             min-height: 44px !important;
-            background: #ffffff !important;
-            border: 1px solid #d6e0ec !important;
-            border-radius: 12px !important;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+            background: rgba(255, 255, 255, 0.75) !important;
+            border: 1px solid rgba(148, 163, 184, 0.22) !important;
+            border-radius: 14px !important;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+            color: var(--text-1) !important;
+            backdrop-filter: blur(12px);
         }
 
         div[data-baseweb="select"] > div * {
-            color: #0f172a !important;
+            color: var(--text-1) !important;
             opacity: 1 !important;
         }
 
         div[data-baseweb="select"] input {
-            color: #0f172a !important;
-            -webkit-text-fill-color: #0f172a !important;
+            color: var(--text-1) !important;
+            -webkit-text-fill-color: var(--text-1) !important;
         }
 
         div[data-baseweb="select"] svg {
-            color: #334155 !important;
-            fill: #334155 !important;
+            color: var(--text-2) !important;
+            fill: var(--text-2) !important;
         }
 
         ul[role="listbox"] {
-            background: #ffffff !important;
+            background: rgba(255,255,255,0.95) !important;
+            border-radius: 16px !important;
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow-md) !important;
+            border: 1px solid rgba(148, 163, 184, 0.16);
         }
 
         ul[role="listbox"] li {
-            color: #0f172a !important;
-            background: #ffffff !important;
+            color: var(--text-1) !important;
+            background: transparent !important;
         }
 
         ul[role="listbox"] li[aria-selected="true"] {
-            background: #dbeafe !important;
-            color: #0f172a !important;
+            background: rgba(37, 99, 235, 0.10) !important;
+            color: var(--primary) !important;
         }
 
         div[data-baseweb="tag"] {
-            background: linear-gradient(135deg, #0f4c81 0%, #1d5f97 100%) !important;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%) !important;
             border: none !important;
             border-radius: 999px !important;
-            padding: 2px 8px !important;
-            box-shadow: 0 4px 10px rgba(15, 76, 129, 0.18);
+            padding: 3px 10px !important;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
         }
 
         div[data-baseweb="tag"] span,
@@ -245,44 +299,34 @@ st.markdown(
             font-weight: 700 !important;
         }
 
-        div[data-baseweb="popover"] {
-            border-radius: 14px !important;
-            overflow: hidden !important;
-        }
-
         .stButton > button,
         .stDownloadButton > button {
             width: 100%;
-            min-height: 44px;
-            border-radius: 12px;
-            border: none;
-            background: linear-gradient(135deg, #0f4c81 0%, #1d5f97 100%);
+            min-height: 46px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 58%, #38bdf8 100%);
             color: #ffffff !important;
             font-weight: 700;
-            font-size: 0.94rem;
-            box-shadow: 0 8px 18px rgba(15, 76, 129, 0.16);
-            transition: all 0.18s ease;
+            font-size: 0.93rem;
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.20);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
         }
 
         .stButton > button:hover,
         .stDownloadButton > button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 12px 20px rgba(15, 76, 129, 0.22);
+            box-shadow: 0 18px 36px rgba(37, 99, 235, 0.25);
+            filter: saturate(1.06);
             color: #ffffff !important;
-        }
-
-        .stButton > button:focus,
-        .stDownloadButton > button:focus {
-            color: #ffffff !important;
-            outline: none !important;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.22);
         }
 
         div[data-testid="stExpander"] details {
-            border-radius: 14px;
-            border: 1px solid rgba(15, 76, 129, 0.12);
-            background: linear-gradient(135deg, #0f4c81 0%, #1d5f97 100%);
+            border-radius: 18px;
+            border: 1px solid rgba(37, 99, 235, 0.14);
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 70%, #38bdf8 100%);
             overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
 
         div[data-testid="stExpander"] details summary p,
@@ -292,139 +336,202 @@ st.markdown(
         }
 
         div[data-testid="stExpanderDetails"] {
-            background: #ffffff;
-            border-radius: 0 0 14px 14px;
-            padding: 0.75rem 0.25rem 0.35rem 0.25rem;
+            background: rgba(255,255,255,0.96);
+            border-radius: 0 0 18px 18px;
+            padding: 0.85rem 0.45rem 0.35rem 0.45rem;
+            backdrop-filter: blur(8px);
         }
 
         div[data-testid="stExpanderDetails"] * {
-            color: #111827 !important;
+            color: var(--text-1) !important;
         }
 
-        div[data-testid="stDataEditor"] {
-            border-radius: 14px;
+        div[data-testid="stDataEditor"],
+        div[data-testid="stDataFrame"] {
+            border-radius: 18px;
             overflow: hidden;
-            border: 1px solid #dbe4f0;
-            background: #ffffff;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.80);
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow-sm);
         }
 
-        .metric-card {
-            background: white;
-            border-radius: 16px;
-            padding: 0.9rem 1rem;
-            box-shadow: 0 8px 22px rgba(16, 24, 40, 0.06);
-            border: 1px solid rgba(15, 76, 129, 0.08);
-            min-height: 110px;
-        }
-
-        .metric-label {
-            color: #475467;
-            font-size: 0.84rem;
-            font-weight: 700;
-            margin-bottom: 0.35rem;
-        }
-
-        .metric-value {
-            color: #0f172a;
-            font-size: 1.8rem;
-            font-weight: 800;
-            line-height: 1.05;
-            margin-bottom: 0.2rem;
-        }
-
-        .metric-note {
-            color: #64748b;
-            font-size: 0.8rem;
-        }
-
-        .panel-card {
-            background: white;
-            border-radius: 18px;
-            padding: 0.9rem 1rem 1rem 1rem;
-            box-shadow: 0 8px 22px rgba(16, 24, 40, 0.06);
-            border: 1px solid rgba(15, 76, 129, 0.08);
-            margin-bottom: 0.8rem;
-        }
-
-        .section-title {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 0.05rem;
-        }
-
-        .section-subtitle {
-            color: #475467;
-            font-size: 0.86rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .small-note {
-            color: #475467;
-            font-size: 0.8rem;
-        }
-
-        .hero-wrapper {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 0.75rem 1rem;
-            box-shadow: 0 10px 26px rgba(16, 24, 40, 0.06);
-            border: 1px solid rgba(15, 76, 129, 0.08);
+        /* smaller hero */
+        .hero-shell {
+            background: linear-gradient(135deg, rgba(255,255,255,0.84) 0%, rgba(255,255,255,0.72) 100%);
+            border-radius: 24px;
+            padding: 0.55rem 0.8rem 0.65rem 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
             margin-top: 0 !important;
-            margin-bottom: 0.65rem;
+            margin-bottom: 0.70rem;
+            backdrop-filter: blur(18px);
         }
 
-        .hero-badge-neutral {
+        .hero-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(56,189,248,0.12), transparent 26%),
+                radial-gradient(circle at 85% 15%, rgba(37,99,235,0.12), transparent 26%);
+            pointer-events: none;
+        }
+
+        .hero-shell::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 50%, #38bdf8 100%);
+        }
+
+        .hero-badge {
             display: inline-block;
-            background: #eff6ff;
-            color: #0f4c81 !important;
-            border: 1px solid #cfe1f5;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary) !important;
+            border: 1px solid rgba(37, 99, 235, 0.14);
             border-radius: 999px;
-            padding: 0.28rem 0.7rem;
-            font-size: 0.74rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.2px;
-        }
-
-        .hero-title-neutral {
-            font-size: 1.65rem;
+            padding: 0.24rem 0.66rem;
+            font-size: 0.68rem;
             font-weight: 800;
-            line-height: 1.08;
-            color: #0f172a !important;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.28rem;
+            letter-spacing: 0.2px;
+            backdrop-filter: blur(8px);
         }
 
-        .hero-subtitle-neutral {
-            font-size: 0.92rem;
-            line-height: 1.6;
-            color: #475467 !important;
+        .hero-title {
+            font-size: 0.98rem;
+            font-weight: 900;
+            line-height: 1.05;
+            color: var(--text-1) !important;
+            margin-bottom: 0.14rem;
+            letter-spacing: -0.1px;
+        }
+
+        .hero-subtitle {
+            font-size: 0.72rem;
+            line-height: 1.45;
+            color: var(--text-2) !important;
             font-weight: 500;
+            max-width: 900px;
         }
 
         .hero-logo-card {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 0.4rem;
-            border: 1px solid #e4eaf2;
-            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+            background: rgba(255,255,255,0.74);
+            border-radius: 16px;
+            padding: 0.22rem;
+            border: 1px solid rgba(255,255,255,0.45);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
             text-align: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .premium-strip {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 0.7rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.84) 0%, rgba(255,255,255,0.72) 100%);
+            border-radius: 20px;
+            padding: 0.9rem 1rem 0.82rem 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255,255,255,0.42);
+            min-height: 108px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+
+        .metric-card::before {
+            content: "";
+            position: absolute;
+            top: -35px;
+            right: -30px;
+            width: 110px;
+            height: 110px;
+            background: radial-gradient(circle, rgba(56,189,248,0.16), transparent 68%);
+            pointer-events: none;
+        }
+
+        .metric-card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 55%, #38bdf8 100%);
+        }
+
+        .metric-label {
+            color: var(--text-3);
+            font-size: 0.78rem;
+            font-weight: 800;
+            margin-bottom: 0.34rem;
+            text-transform: uppercase;
+            letter-spacing: 0.25px;
+        }
+
+        .metric-value {
+            color: var(--text-1);
+            font-size: 1.68rem;
+            font-weight: 900;
+            line-height: 1.04;
+            margin-bottom: 0.16rem;
+        }
+
+        .metric-note {
+            color: var(--text-3);
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+
+        .panel-card {
+            background: rgba(255,255,255,0.76);
+            border-radius: 22px;
+            padding: 0.95rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255,255,255,0.42);
+            margin-bottom: 0.85rem;
+            backdrop-filter: blur(16px);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--text-1);
+            margin-bottom: 0.08rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-3);
+            font-size: 0.84rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .small-note {
+            color: var(--text-3);
+            font-size: 0.79rem;
+            padding-top: 0.2rem;
         }
 
         @media (max-width: 900px) {
-            .hero-title-neutral {
-                font-size: 1.4rem;
-            }
-
-            .hero-subtitle-neutral {
-                font-size: 0.88rem;
-            }
+            .hero-title { font-size: 0.92rem; }
+            .hero-subtitle { font-size: 0.76rem; }
+            .metric-value { font-size: 1.38rem; }
         }
     </style>
     """,
     unsafe_allow_html=True,
 )
-
 
 @st.cache_data(show_spinner=False)
 def load_spinning_master() -> Tuple[Optional[pd.DataFrame], Optional[str]]:
@@ -1069,21 +1176,21 @@ full_spinning_df = st.session_state.full_spinning_df.copy()
 summary_df = build_summary_table(full_spinning_df)
 logo_path = get_logo_path()
 
-st.markdown('<div class="hero-wrapper">', unsafe_allow_html=True)
-hero_col_1, hero_col_2 = st.columns([0.8, 2.7], vertical_alignment="center")
+st.markdown('<div class="hero-shell">', unsafe_allow_html=True)
+hero_col_1, hero_col_2 = st.columns([0.42, 3.35], vertical_alignment="center")
 
 with hero_col_1:
     if logo_path:
         st.markdown('<div class="hero-logo-card">', unsafe_allow_html=True)
-        st.image(logo_path, width=210)
+        st.image(logo_path, width=150)
         st.markdown("</div>", unsafe_allow_html=True)
 
 with hero_col_2:
-    st.markdown('<div class="hero-badge-neutral">Welspun Smart Operations</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title-neutral">Manpower Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-badge">Welspun Smart Operations</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">Manpower Dashboard</div>', unsafe_allow_html=True)
     st.markdown(
         """
-        <div class="hero-subtitle-neutral">
+        <div class="hero-subtitle">
             Executive view of section-wise manpower, editable planning tables, TFO planning,
             and final manpower summary for faster operational review.
         </div>
@@ -1093,35 +1200,38 @@ with hero_col_2:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
+st.markdown('<div class="premium-strip">', unsafe_allow_html=True)
 kpi_col_1, kpi_col_2, kpi_col_3, kpi_col_4 = st.columns(4)
 
 with kpi_col_1:
     render_metric_card(
         "Total Final Manpower",
         f"{int(round(pd.to_numeric(full_spinning_df['BE_Final_Manpower'], errors='coerce').fillna(0).sum())):,}",
-        "Across all spinning sections",
+        "Across all sections",
     )
 
 with kpi_col_2:
     render_metric_card(
-        "Total Scientific Manpower",
+        "Scientific Manpower",
         f"{pd.to_numeric(full_spinning_df['BE_Scientific_Manpower'], errors='coerce').fillna(0).sum():,.2f}",
-        "Driven by formulas and workload logic",
+        "Driven by formulas",
     )
 
 with kpi_col_3:
     render_metric_card(
         "Sections Covered",
         f"{full_spinning_df['Section'].nunique():,}",
-        "Operational coverage in the dashboard",
+        "Operational coverage",
     )
 
 with kpi_col_4:
     render_metric_card(
         "Locations",
         f"{full_spinning_df['Location'].nunique():,}",
-        "Current active location scope",
+        "Active scope",
     )
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 summary_tab, spinning_tab, tfo_tab = st.tabs(["Summary", "Entire Spinning Table", "TFO"])
 
@@ -1189,17 +1299,17 @@ with summary_tab:
     metric_col_1, metric_col_2, metric_col_3 = st.columns(3)
 
     with metric_col_1:
-        render_metric_card("Filtered Final Manpower", f"{summary_total:,}", "Visible summary selection")
+        render_metric_card("Filtered Final Manpower", f"{summary_total:,}", "Visible selection")
 
     with metric_col_2:
-        render_metric_card("Visible Sections", f"{summary_sections:,}", "Current filter output")
+        render_metric_card("Visible Sections", f"{summary_sections:,}", "Current output")
 
     with metric_col_3:
         top_section = "-"
         if not filtered_summary_df.empty:
             top_row = filtered_summary_df.sort_values("BE_Final_Manpower", ascending=False).iloc[0]
             top_section = f"{top_row['Section']} ({int(top_row['BE_Final_Manpower'])})"
-        render_metric_card("Top Section", top_section, "Highest final manpower in current view")
+        render_metric_card("Top Section", top_section, "Highest final manpower")
 
     chart_col_1, chart_col_2 = st.columns([1.4, 1])
 
@@ -1216,7 +1326,7 @@ with summary_tab:
         else:
             bar_chart = (
                 alt.Chart(filtered_summary_df)
-                .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
+                .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
                 .encode(
                     x=alt.X("Section:N", sort="-y", title="Section"),
                     y=alt.Y("BE_Final_Manpower:Q", title="Final manpower"),
@@ -1253,7 +1363,7 @@ with summary_tab:
         else:
             shift_chart = (
                 alt.Chart(shift_summary)
-                .mark_arc(innerRadius=55, outerRadius=105)
+                .mark_arc(innerRadius=58, outerRadius=108)
                 .encode(
                     theta=alt.Theta("Manpower:Q"),
                     color=alt.Color("Shift:N", legend=alt.Legend(orient="bottom")),
@@ -1310,7 +1420,7 @@ with spinning_tab:
     st.markdown('<div class="panel-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Editable spinning manpower table</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-subtitle">Edit formulas and manpower fields. As soon as you update a formula and press Enter, BE_Scientific_Manpower refreshes automatically.</div>',
+        '<div class="section-subtitle">Edit formulas and manpower fields. After you update a formula and press Enter, BE_Scientific_Manpower refreshes automatically.</div>',
         unsafe_allow_html=True,
     )
 
@@ -1426,7 +1536,7 @@ with spinning_tab:
         st.session_state.full_spinning_df = sanitize_editor_dataframe(updated_master_df)
 
         st.markdown(
-            '<div class="small-note">Tip: formula edits now trigger a clean rerender, so the Scientific Manpower column updates immediately after you confirm the edit.</div>',
+            '<div class="small-note">Tip: formula edits trigger a clean rerender, so the Scientific Manpower column updates immediately after you confirm the edit.</div>',
             unsafe_allow_html=True,
         )
 
@@ -1518,28 +1628,28 @@ with tfo_tab:
         render_metric_card(
             "Total No. of Drums",
             f"{current_driver_values['sum_no_of_drums_total']:.2f}",
-            "Calculated from TFO production inputs",
+            "Calculated from inputs",
         )
 
     with tfo_metric_2:
         render_metric_card(
             "TFO Required / Shift",
             f"{current_driver_values['sum_tfo_required_shift_total']:.2f}",
-            "Based on No. of Drums Required and divisor",
+            "Based on divisor logic",
         )
 
     with tfo_metric_3:
         render_metric_card(
             "Drums for 4/2/6 K",
             f"{current_driver_values['no_of_drums_426k']:.2f}",
-            "Used in Jumbo Assembly Winding",
+            "Used in Jumbo Assembly",
         )
 
     with tfo_metric_4:
         render_metric_card(
             "Lower TFO Final Manpower",
             f"{int(round(pd.to_numeric(current_lower_df['BE_Final_Manpower'], errors='coerce').fillna(0).sum())):,}",
-            "Current TFO rows in final table",
+            "Current TFO rows",
         )
 
     st.markdown("#### Upper TFO Production Table")
