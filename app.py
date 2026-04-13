@@ -10,6 +10,8 @@ import streamlit as st
 from openpyxl.styles import Font, PatternFill
 from openpyxl.utils import get_column_letter
 
+from schema_utils import align_and_validate_schemas
+
 st.set_page_config(
     page_title="Manpower Dashboard",
     page_icon="🏭",
@@ -97,23 +99,21 @@ st.markdown(
     """
     <style>
         :root {
-            --primary: #1e3a8a;
+            --primary: #1e40af;
             --primary-2: #2563eb;
             --primary-3: #38bdf8;
-            --accent: #0f172a;
-            --bg: #f5f7fb;
-            --bg-soft: #eef4ff;
-            --surface: rgba(255, 255, 255, 0.78);
-            --surface-strong: rgba(255, 255, 255, 0.92);
+            --bg-1: #f4f8ff;
+            --bg-2: #edf4ff;
+            --surface: rgba(255,255,255,0.78);
+            --surface-strong: rgba(255,255,255,0.92);
             --text-1: #0f172a;
             --text-2: #334155;
             --text-3: #64748b;
-            --border: rgba(148, 163, 184, 0.22);
-            --border-strong: rgba(37, 99, 235, 0.20);
-            --shadow-xs: 0 4px 14px rgba(15, 23, 42, 0.04);
-            --shadow-sm: 0 10px 30px rgba(15, 23, 42, 0.07);
-            --shadow-md: 0 18px 48px rgba(15, 23, 42, 0.10);
-            --shadow-lg: 0 24px 60px rgba(30, 58, 138, 0.14);
+            --border: rgba(148, 163, 184, 0.18);
+            --shadow-xs: 0 4px 12px rgba(15, 23, 42, 0.04);
+            --shadow-sm: 0 10px 28px rgba(15, 23, 42, 0.07);
+            --shadow-md: 0 18px 42px rgba(15, 23, 42, 0.10);
+            --shadow-lg: 0 22px 54px rgba(30, 64, 175, 0.12);
         }
 
         html, body, [class*="css"] {
@@ -135,16 +135,15 @@ st.markdown(
 
         .stApp {
             background:
-                radial-gradient(circle at top left, rgba(56, 189, 248, 0.10), transparent 24%),
-                radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 28%),
-                linear-gradient(180deg, #f6f8fc 0%, #f3f7ff 48%, #edf4ff 100%);
+                radial-gradient(circle at top left, rgba(56,189,248,0.08), transparent 22%),
+                radial-gradient(circle at top right, rgba(37,99,235,0.09), transparent 25%),
+                linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
             color: var(--text-1);
         }
 
-        /* top spacing remove */
         [data-testid="stAppViewContainer"],
         [data-testid="stAppViewContainer"] > section,
-        [data-testid="stAppViewContainer"] > section > div:first-child,
+        [data-testid="stAppViewContainer"] > section > div,
         section.main,
         section.main > div {
             padding-top: 0 !important;
@@ -154,26 +153,32 @@ st.markdown(
         .block-container,
         .main .block-container {
             max-width: 1540px;
-            padding-top: 0.08rem !important;
+            padding-top: 0 !important;
             padding-bottom: 1rem !important;
             margin-top: 0 !important;
         }
 
-        /* remove top bars / placeholders */
-        [data-testid="stSkeleton"],
-        .stSkeleton,
-        .st-emotion-cache-z5fcl4,
-        .st-emotion-cache-1wmy9hl,
-        .st-emotion-cache-18ni7ap,
-        .st-emotion-cache-1r6slb0 {
-            display: none !important;
+        /* hard cleanup for top ghost spacing */
+        .main .block-container > div:first-child,
+        .main .block-container > div:nth-child(2) {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            min-height: 0 !important;
         }
 
+        .main .block-container > div:first-child > div,
+        .main .block-container > div:nth-child(2) > div {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            min-height: 0 !important;
+        }
+
+        [data-testid="stSkeleton"],
+        .stSkeleton,
         div[data-testid="stVerticalBlock"] > div:empty,
         div[data-testid="stVerticalBlockBorderWrapper"]:empty,
         div[data-testid="stMarkdownContainer"]:empty,
-        .element-container:empty,
-        .main .block-container > div:first-child > div:first-child:empty {
+        .element-container:empty {
             display: none !important;
             height: 0 !important;
             min-height: 0 !important;
@@ -189,13 +194,6 @@ st.markdown(
             display: none !important;
         }
 
-        /* extra kill for first unwanted top elements */
-        .block-container > div:first-child > div:first-child,
-        .block-container > div:first-child > div:nth-child(2) {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-
         label[data-testid="stWidgetLabel"] p {
             color: var(--text-1) !important;
             font-weight: 700 !important;
@@ -203,13 +201,13 @@ st.markdown(
         }
 
         div[data-testid="stTabs"] {
-            margin-top: 0.10rem;
+            margin-top: 0.15rem;
         }
 
         div[data-testid="stTabs"] [role="tablist"] {
             gap: 0.35rem;
-            background: rgba(255,255,255,0.55);
-            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255,255,255,0.60);
+            border: 1px solid rgba(148,163,184,0.16);
             padding: 0.35rem;
             border-radius: 16px;
             backdrop-filter: blur(12px);
@@ -219,7 +217,7 @@ st.markdown(
         div[data-testid="stTabs"] button {
             font-weight: 700;
             font-size: 0.92rem;
-            padding: 0.62rem 0.9rem;
+            padding: 0.62rem 0.92rem;
             color: var(--text-2) !important;
             border-radius: 12px !important;
             transition: all 0.22s ease;
@@ -231,7 +229,7 @@ st.markdown(
         }
 
         div[data-testid="stTabs"] button[aria-selected="true"] {
-            background: linear-gradient(135deg, rgba(30,58,138,0.96) 0%, rgba(37,99,235,0.96) 100%) !important;
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%) !important;
             color: #ffffff !important;
             box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
         }
@@ -243,8 +241,8 @@ st.markdown(
         div[data-baseweb="select"] > div,
         .stTextInput > div > div > input {
             min-height: 44px !important;
-            background: rgba(255, 255, 255, 0.75) !important;
-            border: 1px solid rgba(148, 163, 184, 0.22) !important;
+            background: rgba(255,255,255,0.82) !important;
+            border: 1px solid rgba(148,163,184,0.22) !important;
             border-radius: 14px !important;
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
             color: var(--text-1) !important;
@@ -267,11 +265,11 @@ st.markdown(
         }
 
         ul[role="listbox"] {
-            background: rgba(255,255,255,0.95) !important;
+            background: rgba(255,255,255,0.96) !important;
             border-radius: 16px !important;
+            border: 1px solid rgba(148,163,184,0.16);
             backdrop-filter: blur(14px);
             box-shadow: var(--shadow-md) !important;
-            border: 1px solid rgba(148, 163, 184, 0.16);
         }
 
         ul[role="listbox"] li {
@@ -305,26 +303,26 @@ st.markdown(
             min-height: 46px;
             border-radius: 14px;
             border: 1px solid rgba(255,255,255,0.18);
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 58%, #38bdf8 100%);
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 58%, #38bdf8 100%);
             color: #ffffff !important;
             font-weight: 700;
             font-size: 0.93rem;
-            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.20);
+            box-shadow: 0 14px 30px rgba(37,99,235,0.20);
             transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
         }
 
         .stButton > button:hover,
         .stDownloadButton > button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 18px 36px rgba(37, 99, 235, 0.25);
-            filter: saturate(1.06);
+            box-shadow: 0 18px 36px rgba(37,99,235,0.25);
+            filter: saturate(1.05);
             color: #ffffff !important;
         }
 
         div[data-testid="stExpander"] details {
             border-radius: 18px;
-            border: 1px solid rgba(37, 99, 235, 0.14);
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 70%, #38bdf8 100%);
+            border: 1px solid rgba(37,99,235,0.14);
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 72%, #38bdf8 100%);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
         }
@@ -350,44 +348,17 @@ st.markdown(
         div[data-testid="stDataFrame"] {
             border-radius: 18px;
             overflow: hidden;
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            background: rgba(255, 255, 255, 0.80);
+            border: 1px solid rgba(148,163,184,0.18);
+            background: rgba(255,255,255,0.82);
             backdrop-filter: blur(14px);
             box-shadow: var(--shadow-sm);
         }
 
-        /* smaller hero */
-        .hero-shell {
-            background: linear-gradient(135deg, rgba(255,255,255,0.84) 0%, rgba(255,255,255,0.72) 100%);
-            border-radius: 24px;
-            padding: 0.55rem 0.8rem 0.65rem 0.8rem;
-            border: 1px solid rgba(255, 255, 255, 0.45);
-            box-shadow: var(--shadow-lg);
-            position: relative;
-            overflow: hidden;
-            margin-top: 0 !important;
-            margin-bottom: 0.70rem;
-            backdrop-filter: blur(18px);
-        }
+        
 
-        .hero-shell::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(circle at 15% 20%, rgba(56,189,248,0.12), transparent 26%),
-                radial-gradient(circle at 85% 15%, rgba(37,99,235,0.12), transparent 26%);
-            pointer-events: none;
-        }
-
+        /* removed thin blue line */
         .hero-shell::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 50%, #38bdf8 100%);
+            display: none;
         }
 
         .hero-badge {
@@ -396,37 +367,36 @@ st.markdown(
             color: var(--primary) !important;
             border: 1px solid rgba(37, 99, 235, 0.14);
             border-radius: 999px;
-            padding: 0.24rem 0.66rem;
-            font-size: 0.68rem;
+            padding: 0.20rem 0.58rem;
+            font-size: 0.85rem !important;
             font-weight: 800;
-            margin-bottom: 0.28rem;
-            letter-spacing: 0.2px;
+            margin-bottom: 0.20rem;
+            letter-spacing: 0.18px;
             backdrop-filter: blur(8px);
         }
 
         .hero-title {
-            font-size: 0.98rem;
+            font-size: 1.4rem !important;
             font-weight: 900;
-            line-height: 1.05;
+            line-height: 1.02;
             color: var(--text-1) !important;
-            margin-bottom: 0.14rem;
-            letter-spacing: -0.1px;
+            margin-bottom: 0.10rem;
         }
 
         .hero-subtitle {
-            font-size: 0.72rem;
-            line-height: 1.45;
+            font-size:  0.95rem !important;
+            line-height: 1.40;
             color: var(--text-2) !important;
             font-weight: 500;
-            max-width: 900px;
+            max-width: 820px;
         }
 
         .hero-logo-card {
-            background: rgba(255,255,255,0.74);
-            border-radius: 16px;
-            padding: 0.22rem;
-            border: 1px solid rgba(255,255,255,0.45);
-            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+            background: rgba(255,255,255,0.78);
+            border-radius: 14px;
+            padding: 0.18rem;
+            border: 1px solid rgba(255,255,255,0.52);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
             text-align: center;
             backdrop-filter: blur(12px);
         }
@@ -438,11 +408,11 @@ st.markdown(
         }
 
         .metric-card {
-            background: linear-gradient(180deg, rgba(255,255,255,0.84) 0%, rgba(255,255,255,0.72) 100%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.86) 0%, rgba(255,255,255,0.76) 100%);
             border-radius: 20px;
-            padding: 0.9rem 1rem 0.82rem 1rem;
+            padding: 0.88rem 1rem 0.82rem 1rem;
             box-shadow: var(--shadow-sm);
-            border: 1px solid rgba(255,255,255,0.42);
+            border: 1px solid rgba(255,255,255,0.45);
             min-height: 108px;
             position: relative;
             overflow: hidden;
@@ -467,7 +437,7 @@ st.markdown(
             left: 0;
             width: 100%;
             height: 4px;
-            background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 55%, #38bdf8 100%);
+            background: linear-gradient(90deg, #1e40af 0%, #2563eb 55%, #38bdf8 100%);
         }
 
         .metric-label {
@@ -494,11 +464,11 @@ st.markdown(
         }
 
         .panel-card {
-            background: rgba(255,255,255,0.76);
+            background: rgba(255,255,255,0.78);
             border-radius: 22px;
             padding: 0.95rem;
             box-shadow: var(--shadow-sm);
-            border: 1px solid rgba(255,255,255,0.42);
+            border: 1px solid rgba(255,255,255,0.46);
             margin-bottom: 0.85rem;
             backdrop-filter: blur(16px);
         }
@@ -524,33 +494,65 @@ st.markdown(
         }
 
         @media (max-width: 900px) {
-            .hero-title { font-size: 0.92rem; }
-            .hero-subtitle { font-size: 0.76rem; }
+            .hero-title { font-size: 0.88rem; }
+            .hero-subtitle { font-size: 0.74rem; }
             .metric-value { font-size: 1.38rem; }
+        
+        .panel-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
         }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+
 @st.cache_data(show_spinner=False)
-def load_spinning_master() -> Tuple[Optional[pd.DataFrame], Optional[str]]:
-    for candidate in FALLBACK_SPINNING_PATHS:
-        if candidate.exists():
-            source_df = pd.read_excel(candidate, sheet_name="Spinning")
+def load_manning_master() -> Tuple[Optional[pd.DataFrame], Optional[str]]:
+    try:
+        spin_path = Path("Spinning.xlsx")
+        wtt_path = Path("WTT.xlsx")
 
-            if "Dept_Machine_Name" not in source_df.columns and "Department" in source_df.columns:
-                source_df["Dept_Machine_Name"] = source_df["Department"]
+        if not spin_path.exists() or not wtt_path.exists():
+            return None, "Spinning.xlsx or WTT.xlsx missing"
 
-            for col in DISPLAY_COLUMNS:
-                if col not in source_df.columns:
-                    source_df[col] = 0 if col in NUMERIC_COLUMNS else ""
+        spin_df = pd.read_excel(spin_path, sheet_name="Spinning")
+        wtt_df = pd.read_excel(wtt_path, sheet_name="WTT")
 
-            source_df["Excel_Row_No"] = range(2, len(source_df) + 2)
-            return source_df, str(candidate)
+        # --- FIX: align schema ---
+        wtt_df = wtt_df.rename(columns={
+            "HO_Scientific_Manpower": "BE_Scientific_Manpower",
+            "HO_Final_Manpower": "BE_Final_Manpower",
+        })
 
-    return None, None
+        # normalize Dept column
+        for df in [spin_df, wtt_df]:
+            if "Dept_Machine_Name" not in df.columns and "Department" in df.columns:
+                df["Dept_Machine_Name"] = df["Department"]
 
+        # --- STRICT schema check ---
+        if set(spin_df.columns) != set(wtt_df.columns):
+            return None, "Schema mismatch even after alignment"
+
+        # merge
+        source_df = pd.concat([spin_df, wtt_df], ignore_index=True)
+
+        # enforce required columns
+        for col in DISPLAY_COLUMNS:
+            if col not in source_df.columns:
+                source_df[col] = 0 if col in NUMERIC_COLUMNS else ""
+
+        source_df["Excel_Row_No"] = range(2, len(source_df) + 2)
+
+        return source_df, "Spinning + WTT merged"
+
+    except Exception as e:
+        return None, str(e)
 
 def get_logo_path() -> Optional[str]:
     for candidate in FALLBACK_LOGO_PATHS:
@@ -1148,9 +1150,13 @@ def render_metric_card(title: str, value: str, note: str):
     )
 
 
-source_spinning_df, source_path = load_spinning_master()
-if source_spinning_df is None:
-    st.error("Spinning.xlsx file was not found. Please keep the file in the configured path or in the same folder as the app.")
+try:
+    spin_df, wtt_df = align_and_validate_schemas("Spinning.xlsx", "WTT.xlsx")
+    source_spinning_df = pd.concat([spin_df, wtt_df], ignore_index=True)
+    source_spinning_df["Excel_Row_No"] = range(2, len(source_spinning_df) + 2)
+
+except Exception as e:
+    st.error(str(e))
     st.stop()
 
 current_upper_df = calculate_upper_tfo_metrics(st.session_state.tfo_input_df)
@@ -1177,12 +1183,12 @@ summary_df = build_summary_table(full_spinning_df)
 logo_path = get_logo_path()
 
 st.markdown('<div class="hero-shell">', unsafe_allow_html=True)
-hero_col_1, hero_col_2 = st.columns([0.42, 3.35], vertical_alignment="center")
+hero_col_1, hero_col_2 = st.columns([0.5, 3.5], vertical_alignment="center")
 
 with hero_col_1:
     if logo_path:
-        st.markdown('<div class="hero-logo-card">', unsafe_allow_html=True)
-        st.image(logo_path, width=150)
+        # st.markdown('<div class="hero-logo-card">', unsafe_allow_html=True)
+        st.image(logo_path, width=200)
         st.markdown("</div>", unsafe_allow_html=True)
 
 with hero_col_2:
@@ -1191,7 +1197,7 @@ with hero_col_2:
     st.markdown(
         """
         <div class="hero-subtitle">
-            Executive view of section-wise manpower, editable planning tables, TFO planning,
+            Executive view of section-wise manpower, editable planning tables,
             and final manpower summary for faster operational review.
         </div>
         """,
@@ -1233,10 +1239,12 @@ with kpi_col_4:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-summary_tab, spinning_tab, tfo_tab = st.tabs(["Summary", "Entire Spinning Table", "TFO"])
-
+summary_tab, spinning_tab, tfo_tab, wtt_tab = st.tabs(
+    ["Summary", "Entire Spinning Table", "TFO", "WTT"]
+)
 with summary_tab:
-    st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+
     st.markdown('<div class="section-title">Executive filters</div>', unsafe_allow_html=True)
     st.markdown(
         '<div class="section-subtitle">Use the filters below to focus the summary view without changing the underlying data.</div>',
@@ -1314,7 +1322,7 @@ with summary_tab:
     chart_col_1, chart_col_2 = st.columns([1.4, 1])
 
     with chart_col_1:
-        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
         st.markdown('<div class="section-title">Section-wise final manpower</div>', unsafe_allow_html=True)
         st.markdown(
             '<div class="section-subtitle">Quick comparison of final manpower across the selected sections.</div>',
@@ -1339,7 +1347,7 @@ with summary_tab:
         st.markdown("</div>", unsafe_allow_html=True)
 
     with chart_col_2:
-        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
         st.markdown('<div class="section-title">Shift mix</div>', unsafe_allow_html=True)
         st.markdown(
             '<div class="section-subtitle">Plant-level shift allocation from the current full table.</div>',
@@ -1375,7 +1383,7 @@ with summary_tab:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Summary table</div>', unsafe_allow_html=True)
     st.markdown(
         '<div class="section-subtitle">Section-wise final manpower ready for leadership review and download.</div>',
@@ -1417,7 +1425,7 @@ with summary_tab:
     st.markdown("</div>", unsafe_allow_html=True)
 
 with spinning_tab:
-    st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Editable spinning manpower table</div>', unsafe_allow_html=True)
     st.markdown(
         '<div class="section-subtitle">Edit formulas and manpower fields. After you update a formula and press Enter, BE_Scientific_Manpower refreshes automatically.</div>',
@@ -1543,7 +1551,7 @@ with spinning_tab:
     st.markdown("</div>", unsafe_allow_html=True)
 
 with tfo_tab:
-    st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">TFO planning and manpower engine</div>', unsafe_allow_html=True)
     st.markdown(
         '<div class="section-subtitle">Editable TFO production inputs with automatic roll-through into the entire spinning table and final summary.</div>',
@@ -1746,5 +1754,20 @@ with tfo_tab:
             )
             st.session_state.full_spinning_editor_version += 1
             st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with wtt_tab:
+    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Entire WTT Table</div>', unsafe_allow_html=True)
+
+    wtt_df = full_spinning_df[
+        full_spinning_df["Business"].astype(str).str.upper() == "WTT"
+    ][DISPLAY_COLUMNS].copy()
+
+    if wtt_df.empty:
+        st.info("No WTT data available.")
+    else:
+        st.dataframe(wtt_df, width="stretch", hide_index=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
