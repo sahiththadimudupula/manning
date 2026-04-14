@@ -50,6 +50,7 @@ DISPLAY_COLUMNS = [
     "Contractors",
     "Company_Associate",
     "BE_Final_Manpower",
+    "N_shifts",
     "General_Shift",
     "Shift_A",
     "Shift_B",
@@ -76,6 +77,7 @@ NUMERIC_COLUMNS = [
     "Contractors",
     "Company_Associate",
     "BE_Final_Manpower",
+    "N_shifts",
     "General_Shift",
     "Shift_A",
     "Shift_B",
@@ -1151,8 +1153,12 @@ def render_metric_card(title: str, value: str, note: str):
 
 
 try:
-    spin_df, wtt_df = align_and_validate_schemas("Spinning.xlsx", "WTT.xlsx")
-    source_spinning_df = pd.concat([spin_df, wtt_df], ignore_index=True)
+    spin_df, wtt_df, rugs_df = align_and_validate_schemas(
+    "data/Spinning.xlsx",
+    "data/WTT.xlsx",
+    "data/Rugs.xlsx"
+    )
+    source_spinning_df = pd.concat([spin_df, wtt_df, rugs_df], ignore_index=True)
     source_spinning_df["Excel_Row_No"] = range(2, len(source_spinning_df) + 2)
 
 except Exception as e:
@@ -1239,8 +1245,8 @@ with kpi_col_4:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-summary_tab, spinning_tab, tfo_tab, wtt_tab = st.tabs(
-    ["Summary", "Entire Spinning Table", "TFO", "WTT"]
+summary_tab, spinning_tab, tfo_tab, wtt_tab, rugs_tab = st.tabs(
+    ["Summary", "Entire Spinning Table", "TFO", "WTT", "Rugs"]
 )
 with summary_tab:
     # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
@@ -1771,3 +1777,19 @@ with wtt_tab:
         st.dataframe(wtt_df, width="stretch", hide_index=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+with rugs_tab:
+    st.markdown('<div class="section-title">Entire Rugs Table</div>', unsafe_allow_html=True)
+
+    rugs_df = full_spinning_df[
+        full_spinning_df["Business"].astype(str).str.strip().str.upper() == "RUGS"
+    ].copy()
+
+    if rugs_df.empty:
+        st.info("No Rugs data available.")
+    else:
+        st.dataframe(
+            rugs_df[DISPLAY_COLUMNS],
+            width="stretch",
+            hide_index=True
+        )
