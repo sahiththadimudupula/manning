@@ -1203,8 +1203,7 @@ with hero_col_2:
     st.markdown(
         """
         <div class="hero-subtitle">
-            Executive view of section-wise manpower, editable planning tables,
-            and final manpower summary for faster operational review.
+            Enabling optimized manpower allocation, using a production-driven recommendation engine
         </div>
         """,
         unsafe_allow_html=True,
@@ -1429,6 +1428,13 @@ with summary_tab:
     )
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+    # ✅ ADD THIS BLOCK
+    deviation_df = pd.read_excel("data/deviation.xlsx")
+
+    st.markdown('<div class="section-title">Deviation Table</div>', unsafe_allow_html=True)
+
+    st.dataframe(deviation_df, width="stretch", hide_index=True)
 
 with spinning_tab:
     # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
