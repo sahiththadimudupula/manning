@@ -1181,7 +1181,7 @@ if "full_spinning_df" not in st.session_state:
 
 st.session_state.full_spinning_df = recalculate_scientific_manpower(
     st.session_state.full_spinning_df,
-    current_upper_df,
+    current_upper_df
 )
 
 full_spinning_df = st.session_state.full_spinning_df.copy()
@@ -1244,8 +1244,8 @@ with kpi_col_4:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-summary_tab, spinning_tab, tfo_tab, wtt_tab, rugs_tab = st.tabs(
-    ["Summary", "Entire Spinning Table", "TFO", "WTT", "Rugs"]
+summary_tab, spinning_tab, wtt_tab, rugs_tab = st.tabs(
+    ["Summary", "Spinning", "WTT", "Rugs"]
 )
 with summary_tab:
     # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
@@ -1437,365 +1437,324 @@ with summary_tab:
     st.dataframe(deviation_df, width="stretch", hide_index=True)
 
 with spinning_tab:
+
+    sub_tab1, sub_tab2 = st.tabs(["Main", "TFO"])
+
+    # --- Main Spinning ---
+    with sub_tab1:
+        st.markdown('<div class="section-title">Entire Spinning Table</div>', unsafe_allow_html=True)
+
+        spinning_df = full_spinning_df[
+            full_spinning_df["Business"].str.upper() == "SPINNING"
+        ]
+
+        st.dataframe(spinning_df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
+
+    with sub_tab2:
     # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Editable spinning manpower table</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="section-subtitle">Edit formulas and manpower fields. After you update a formula and press Enter, BE_Scientific_Manpower refreshes automatically.</div>',
-        unsafe_allow_html=True,
-    )
-
-    spin_col_1, spin_col_2, spin_col_3 = st.columns([1.1, 1.3, 1.8])
-
-    with spin_col_1:
-        detail_location = st.selectbox(
-            "Location filter",
-            options=sorted(full_spinning_df["Location"].dropna().astype(str).unique().tolist()),
-            key="detail_location",
-        )
-
-    with spin_col_2:
-        detail_section_options = sorted(
-            full_spinning_df.loc[
-                full_spinning_df["Location"].astype(str) == str(detail_location),
-                "Section",
-            ]
-            .dropna()
-            .astype(str)
-            .unique()
-            .tolist()
-        )
-        detail_sections = st.multiselect(
-            "Section filter",
-            options=detail_section_options,
-            default=detail_section_options,
-            key="detail_section_filter",
-        )
-
-    with spin_col_3:
-        detail_search = st.text_input(
-            "Search machine / designation",
-            placeholder="Type to filter",
-            key="detail_search",
-        )
-
-    editor_view_df = full_spinning_df.loc[
-        full_spinning_df["Location"].astype(str) == str(detail_location)
-    ].copy()
-
-    if detail_sections:
-        editor_view_df = editor_view_df.loc[
-            editor_view_df["Section"].astype(str).isin(detail_sections)
-        ].copy()
-    else:
-        editor_view_df = editor_view_df.iloc[0:0].copy()
-
-    if detail_search.strip():
-        search_mask = (
-            editor_view_df["Dept_Machine_Name"].astype(str).str.contains(detail_search, case=False, na=False)
-            | editor_view_df["Designation"].astype(str).str.contains(detail_search, case=False, na=False)
-        )
-        editor_view_df = editor_view_df.loc[search_mask].copy()
-
-    if editor_view_df.empty:
-        st.info("No rows available for the current filter selection.")
-    else:
-        editor_display_df = editor_view_df[["Row_Key"] + DISPLAY_COLUMNS].copy()
-        editor_widget_key = f"full_spinning_editor_{st.session_state.full_spinning_editor_version}"
-
-        edited_view_df = st.data_editor(
-            editor_display_df,
-            width="stretch",
-            hide_index=True,
-            height=680,
-            key=editor_widget_key,
-            disabled=[
-                "Row_Key",
-                "Location",
-                "Business",
-                "Section",
-                "Sr_No",
-                "Dept_Machine_Name",
-                "Designation",
-                "Machine_Count",
-                "Workload",
-                "BE_Scientific_Manpower",
-                "Operator_Type",
-                "Contractors",
-                "Company_Associate",
-            ],
-            column_config={
-                "Row_Key": st.column_config.TextColumn("Row_Key", width="small"),
-                "BE_Scientific_Manpower": st.column_config.NumberColumn("BE_Scientific_Manpower", format="%.2f"),
-                "Contractors": st.column_config.NumberColumn("Contractors", format="%.2f"),
-                "Company_Associate": st.column_config.NumberColumn("Company_Associate", format="%.2f"),
-                "BE_Final_Manpower": st.column_config.NumberColumn("BE_Final_Manpower", format="%.2f"),
-                "General_Shift": st.column_config.NumberColumn("General_Shift", format="%.2f"),
-                "Shift_A": st.column_config.NumberColumn("Shift_A", format="%.2f"),
-                "Shift_B": st.column_config.NumberColumn("Shift_B", format="%.2f"),
-                "Shift_C": st.column_config.NumberColumn("Shift_C", format="%.2f"),
-                "Reliever": st.column_config.NumberColumn("Reliever", format="%.2f"),
-            },
-        )
-
-        updated_master_df = apply_editor_changes(full_spinning_df, edited_view_df)
-        updated_master_df = recalculate_scientific_manpower(updated_master_df, current_upper_df)
-
-        before_compare_df = full_spinning_df[
-            ["Row_Key"] + EDITABLE_COLUMNS + ["BE_Scientific_Manpower"]
-        ].sort_values("Row_Key")
-
-        after_compare_df = updated_master_df[
-            ["Row_Key"] + EDITABLE_COLUMNS + ["BE_Scientific_Manpower"]
-        ].sort_values("Row_Key")
-
-        if not dataframes_equal_for_ui(before_compare_df, after_compare_df):
-            st.session_state.full_spinning_df = sanitize_editor_dataframe(updated_master_df)
-            st.session_state.full_spinning_editor_version += 1
-            st.rerun()
-
-        st.session_state.full_spinning_df = sanitize_editor_dataframe(updated_master_df)
-
+        st.markdown('<div class="section-title">TFO planning and manpower engine</div>', unsafe_allow_html=True)
         st.markdown(
-            '<div class="small-note">Tip: formula edits trigger a clean rerender, so the Scientific Manpower column updates immediately after you confirm the edit.</div>',
+            '<div class="section-subtitle">Editable TFO production inputs with automatic roll-through into the entire spinning table and final summary.</div>',
             unsafe_allow_html=True,
         )
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        input_columns = [
+            "Count",
+            "Customer",
+            "Count2",
+            "Speed",
+            "TPI",
+            "Utilization",
+            "Efficiency",
+            "Production Required / day Kgs",
+            "TFO divisor",
+            "mpm",
+            "Eff",
+            "Machine divisor",
+        ]
 
-with tfo_tab:
-    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">TFO planning and manpower engine</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="section-subtitle">Editable TFO production inputs with automatic roll-through into the entire spinning table and final summary.</div>',
-        unsafe_allow_html=True,
-    )
-
-    input_columns = [
-        "Count",
-        "Customer",
-        "Count2",
-        "Speed",
-        "TPI",
-        "Utilization",
-        "Efficiency",
-        "Production Required / day Kgs",
-        "TFO divisor",
-        "mpm",
-        "Eff",
-        "Machine divisor",
-    ]
-
-    edited_tfo_input_df = st.data_editor(
-        st.session_state.tfo_input_df[input_columns],
-        width="stretch",
-        num_rows="dynamic",
-        key="tfo_editor",
-        hide_index=True,
-        column_config={
-            "Count": st.column_config.TextColumn("Count"),
-            "Customer": st.column_config.TextColumn("Customer"),
-            "Count2": st.column_config.NumberColumn("Count2", format="%.2f"),
-            "Speed": st.column_config.NumberColumn("Speed", format="%.2f"),
-            "TPI": st.column_config.NumberColumn("TPI", format="%.2f"),
-            "Utilization": st.column_config.NumberColumn("Utilization", format="%.2f"),
-            "Efficiency": st.column_config.NumberColumn("Efficiency", format="%.2f"),
-            "Production Required / day Kgs": st.column_config.NumberColumn("Production Required / day Kgs", format="%.2f"),
-            "TFO divisor": st.column_config.NumberColumn("TFO divisor", format="%.2f"),
-            "mpm": st.column_config.NumberColumn("mpm", format="%.2f"),
-            "Eff": st.column_config.NumberColumn("Eff", format="%.2f"),
-            "Machine divisor": st.column_config.NumberColumn("Machine divisor", format="%.2f"),
-        },
-    )
-
-    for col in [
-        "Count2",
-        "Speed",
-        "TPI",
-        "Utilization",
-        "Efficiency",
-        "Production Required / day Kgs",
-        "TFO divisor",
-        "mpm",
-        "Eff",
-        "Machine divisor",
-    ]:
-        edited_tfo_input_df[col] = pd.to_numeric(
-            edited_tfo_input_df[col],
-            errors="coerce",
-        ).fillna(0).round(2)
-
-    st.session_state.tfo_input_df = edited_tfo_input_df.copy()
-
-    current_upper_df = calculate_upper_tfo_metrics(edited_tfo_input_df)
-    current_upper_total_df = build_upper_total_row(current_upper_df)
-    current_upper_final_df = pd.concat(
-        [current_upper_df.drop(columns=["Upper_Row_No"], errors="ignore"), current_upper_total_df],
-        ignore_index=True,
-    )
-
-    updated_full_df, current_lower_df, current_driver_values = rebuild_full_spinning_with_tfo(
-        source_df=source_spinning_df,
-        base_full_df=st.session_state.full_spinning_df,
-        upper_tfo_df=current_upper_df,
-    )
-
-    st.session_state.full_spinning_df = updated_full_df
-    full_spinning_df = updated_full_df.copy()
-
-    tfo_metric_1, tfo_metric_2, tfo_metric_3, tfo_metric_4 = st.columns(4)
-
-    with tfo_metric_1:
-        render_metric_card(
-            "Total No. of Drums",
-            f"{current_driver_values['sum_no_of_drums_total']:.2f}",
-            "Calculated from inputs",
+        edited_tfo_input_df = st.data_editor(
+            st.session_state.tfo_input_df[input_columns],
+            width="stretch",
+            num_rows="dynamic",
+            key="tfo_editor",
+            hide_index=True,
+            column_config={
+                "Count": st.column_config.TextColumn("Count"),
+                "Customer": st.column_config.TextColumn("Customer"),
+                "Count2": st.column_config.NumberColumn("Count2", format="%.2f"),
+                "Speed": st.column_config.NumberColumn("Speed", format="%.2f"),
+                "TPI": st.column_config.NumberColumn("TPI", format="%.2f"),
+                "Utilization": st.column_config.NumberColumn("Utilization", format="%.2f"),
+                "Efficiency": st.column_config.NumberColumn("Efficiency", format="%.2f"),
+                "Production Required / day Kgs": st.column_config.NumberColumn("Production Required / day Kgs", format="%.2f"),
+                "TFO divisor": st.column_config.NumberColumn("TFO divisor", format="%.2f"),
+                "mpm": st.column_config.NumberColumn("mpm", format="%.2f"),
+                "Eff": st.column_config.NumberColumn("Eff", format="%.2f"),
+                "Machine divisor": st.column_config.NumberColumn("Machine divisor", format="%.2f"),
+            },
         )
 
-    with tfo_metric_2:
-        render_metric_card(
-            "TFO Required / Shift",
-            f"{current_driver_values['sum_tfo_required_shift_total']:.2f}",
-            "Based on divisor logic",
+        for col in [
+            "Count2",
+            "Speed",
+            "TPI",
+            "Utilization",
+            "Efficiency",
+            "Production Required / day Kgs",
+            "TFO divisor",
+            "mpm",
+            "Eff",
+            "Machine divisor",
+        ]:
+            edited_tfo_input_df[col] = pd.to_numeric(
+                edited_tfo_input_df[col],
+                errors="coerce",
+            ).fillna(0).round(2)
+
+        st.session_state.tfo_input_df = edited_tfo_input_df.copy()
+
+        current_upper_df = calculate_upper_tfo_metrics(edited_tfo_input_df)
+        current_upper_total_df = build_upper_total_row(current_upper_df)
+        current_upper_final_df = pd.concat(
+            [current_upper_df.drop(columns=["Upper_Row_No"], errors="ignore"), current_upper_total_df],
+            ignore_index=True,
         )
 
-    with tfo_metric_3:
-        render_metric_card(
-            "Drums for 4/2/6 K",
-            f"{current_driver_values['no_of_drums_426k']:.2f}",
-            "Used in Jumbo Assembly",
+        updated_full_df, current_lower_df, current_driver_values = rebuild_full_spinning_with_tfo(
+            source_df=source_spinning_df,
+            base_full_df=st.session_state.full_spinning_df,
+            upper_tfo_df=current_upper_df,
         )
 
-    with tfo_metric_4:
-        render_metric_card(
-            "Lower TFO Final Manpower",
-            f"{int(round(pd.to_numeric(current_lower_df['BE_Final_Manpower'], errors='coerce').fillna(0).sum())):,}",
-            "Current TFO rows",
-        )
+        st.session_state.full_spinning_df = updated_full_df
+        full_spinning_df = updated_full_df.copy()
 
-    st.markdown("#### Upper TFO Production Table")
+        tfo_metric_1, tfo_metric_2, tfo_metric_3, tfo_metric_4 = st.columns(4)
 
-    upper_display_columns = [
-        "Count",
-        "Customer",
-        "Count2",
-        "Speed",
-        "TPI",
-        "Utilization",
-        "Efficiency",
-        "Production per Drum/day",
-        "Production Required / day Kgs",
-        "Production Required / Month Kgs",
-        "No. of Drums Required",
-        "No. of TFO Required / shift",
-        "mpm",
-        "Eff",
-        "kgs/drum/day",
-        "No. of Drums",
-        "no. of machines",
-    ]
-
-    st.dataframe(
-        current_upper_final_df[upper_display_columns],
-        width="stretch",
-        hide_index=True,
-    )
-
-    st.markdown("#### Lower TFO Manpower Table")
-    st.dataframe(
-        current_lower_df,
-        width="stretch",
-        hide_index=True,
-        column_config={
-            "BE_Scientific_Manpower": st.column_config.NumberColumn("BE_Scientific_Manpower", format="%.2f"),
-            "BE_Final_Manpower": st.column_config.NumberColumn("BE_Final_Manpower", format="%.2f"),
-        },
-    )
-
-    with st.expander("Formula logic"):
-        st.markdown(
-            f"""
-            **Upper table**
-            - Production Required / Month Kgs = Production Required / day Kgs × 30
-            - Production per Drum/day = `((Speed × 60 × 8 × Efficiency × 2) / (TPI × 36 × 840 × Count2 × 2.202)) × 3`
-            - No. of Drums Required = Production Required / day Kgs / Production per Drum/day
-            - No. of TFO Required / shift = No. of Drums Required / TFO divisor
-            - kgs/drum/day = `((mpm × Eff × 8 × 60 × 1.09) / (Count2 × 840 × 2.202)) × 3`
-            - No. of Drums = Production Required / day Kgs / kgs/drum/day
-            - no. of machines = No. of Drums / Machine divisor
-
-            **Lower table**
-            - Assembly winding = `ROUNDUP((SUM(T2:T18)/36)*3,0)`
-            - Jumbo Assembly Winding = `ROUND(ROUNDUP(T19,0)/16,0)*2`
-            - TFO Operator = `ROUND(SUM(N2:N18)/6,0)*3`
-            - TFO Operator (Doffer) = `ROUNDUP(SUM(N2:N18)/4,0)*3`
-
-            **Current driver values**
-            - Total No. of Drums = {current_driver_values['sum_no_of_drums_total']:.2f}
-            - Total No. of TFO Required / shift = {current_driver_values['sum_tfo_required_shift_total']:.2f}
-            - No. of Drums for 4/2/6 K = {current_driver_values['no_of_drums_426k']:.2f}
-            """
-        )
-
-    action_col_1, action_col_2 = st.columns(2)
-
-    with action_col_1:
-        if st.button("Reset TFO Table"):
-            st.session_state.tfo_input_df = get_initial_tfo_data()
-            reset_upper_df = calculate_upper_tfo_metrics(st.session_state.tfo_input_df)
-            reset_full_df, _, _ = rebuild_full_spinning_with_tfo(
-                source_df=source_spinning_df,
-                base_full_df=st.session_state.full_spinning_df,
-                upper_tfo_df=reset_upper_df,
+        with tfo_metric_1:
+            render_metric_card(
+                "Total No. of Drums",
+                f"{current_driver_values['sum_no_of_drums_total']:.2f}",
+                "Calculated from inputs",
             )
-            st.session_state.full_spinning_df = reset_full_df
-            st.session_state.full_spinning_editor_version += 1
-            st.rerun()
 
-    with action_col_2:
-        if st.button("Reset Full Spinning Table from Source"):
-            fresh_upper_df = calculate_upper_tfo_metrics(st.session_state.tfo_input_df)
-            fresh_lower_df, _ = calculate_lower_tfo_manpower(fresh_upper_df)
-            st.session_state.full_spinning_df = get_initial_full_spinning_df(source_spinning_df, fresh_lower_df)
-            st.session_state.full_spinning_df = recalculate_scientific_manpower(
-                st.session_state.full_spinning_df,
-                fresh_upper_df,
+        with tfo_metric_2:
+            render_metric_card(
+                "TFO Required / Shift",
+                f"{current_driver_values['sum_tfo_required_shift_total']:.2f}",
+                "Based on divisor logic",
             )
-            tfo_mask = st.session_state.full_spinning_df["Section"].astype(str).str.upper() == "TFO"
-            st.session_state.full_spinning_df.loc[tfo_mask, "BE_Final_Manpower"] = (
-                st.session_state.full_spinning_df.loc[tfo_mask, "BE_Scientific_Manpower"]
-            )
-            st.session_state.full_spinning_editor_version += 1
-            st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        with tfo_metric_3:
+            render_metric_card(
+                "Drums for 4/2/6 K",
+                f"{current_driver_values['no_of_drums_426k']:.2f}",
+                "Used in Jumbo Assembly",
+            )
+
+        with tfo_metric_4:
+            render_metric_card(
+                "Lower TFO Final Manpower",
+                f"{int(round(pd.to_numeric(current_lower_df['BE_Final_Manpower'], errors='coerce').fillna(0).sum())):,}",
+                "Current TFO rows",
+            )
+
+        st.markdown("#### Upper TFO Production Table")
+
+        upper_display_columns = [
+            "Count",
+            "Customer",
+            "Count2",
+            "Speed",
+            "TPI",
+            "Utilization",
+            "Efficiency",
+            "Production per Drum/day",
+            "Production Required / day Kgs",
+            "Production Required / Month Kgs",
+            "No. of Drums Required",
+            "No. of TFO Required / shift",
+            "mpm",
+            "Eff",
+            "kgs/drum/day",
+            "No. of Drums",
+            "no. of machines",
+        ]
+
+        st.dataframe(
+            current_upper_final_df[upper_display_columns],
+            width="stretch",
+            hide_index=True,
+        )
+
+        st.markdown("#### Lower TFO Manpower Table")
+        st.dataframe(
+            current_lower_df,
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "BE_Scientific_Manpower": st.column_config.NumberColumn("BE_Scientific_Manpower", format="%.2f"),
+                "BE_Final_Manpower": st.column_config.NumberColumn("BE_Final_Manpower", format="%.2f"),
+            },
+        )
+
+        with st.expander("Formula logic"):
+            st.markdown(
+                f"""
+                **Upper table**
+                - Production Required / Month Kgs = Production Required / day Kgs × 30
+                - Production per Drum/day = `((Speed × 60 × 8 × Efficiency × 2) / (TPI × 36 × 840 × Count2 × 2.202)) × 3`
+                - No. of Drums Required = Production Required / day Kgs / Production per Drum/day
+                - No. of TFO Required / shift = No. of Drums Required / TFO divisor
+                - kgs/drum/day = `((mpm × Eff × 8 × 60 × 1.09) / (Count2 × 840 × 2.202)) × 3`
+                - No. of Drums = Production Required / day Kgs / kgs/drum/day
+                - no. of machines = No. of Drums / Machine divisor
+
+                **Lower table**
+                - Assembly winding = `ROUNDUP((SUM(T2:T18)/36)*3,0)`
+                - Jumbo Assembly Winding = `ROUND(ROUNDUP(T19,0)/16,0)*2`
+                - TFO Operator = `ROUND(SUM(N2:N18)/6,0)*3`
+                - TFO Operator (Doffer) = `ROUNDUP(SUM(N2:N18)/4,0)*3`
+
+                **Current driver values**
+                - Total No. of Drums = {current_driver_values['sum_no_of_drums_total']:.2f}
+                - Total No. of TFO Required / shift = {current_driver_values['sum_tfo_required_shift_total']:.2f}
+                - No. of Drums for 4/2/6 K = {current_driver_values['no_of_drums_426k']:.2f}
+                """
+            )
+
+        action_col_1, action_col_2 = st.columns(2)
+
+        with action_col_1:
+            if st.button("Reset TFO Table"):
+                st.session_state.tfo_input_df = get_initial_tfo_data()
+                reset_upper_df = calculate_upper_tfo_metrics(st.session_state.tfo_input_df)
+                reset_full_df, _, _ = rebuild_full_spinning_with_tfo(
+                    source_df=source_spinning_df,
+                    base_full_df=st.session_state.full_spinning_df,
+                    upper_tfo_df=reset_upper_df,
+                )
+                st.session_state.full_spinning_df = reset_full_df
+                st.session_state.full_spinning_editor_version += 1
+                st.rerun()
+
+        with action_col_2:
+            if st.button("Reset Full Spinning Table from Source"):
+                fresh_upper_df = calculate_upper_tfo_metrics(st.session_state.tfo_input_df)
+                fresh_lower_df, _ = calculate_lower_tfo_manpower(fresh_upper_df)
+                st.session_state.full_spinning_df = get_initial_full_spinning_df(source_spinning_df, fresh_lower_df)
+                st.session_state.full_spinning_df = recalculate_scientific_manpower(
+                    st.session_state.full_spinning_df,
+                    fresh_upper_df,
+                )
+                tfo_mask = st.session_state.full_spinning_df["Section"].astype(str).str.upper() == "TFO"
+                st.session_state.full_spinning_df.loc[tfo_mask, "BE_Final_Manpower"] = (
+                    st.session_state.full_spinning_df.loc[tfo_mask, "BE_Scientific_Manpower"]
+                )
+                st.session_state.full_spinning_editor_version += 1
+                st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+        # --- STEP 4: Recalculate scientific manpower ---
+        # --- STEP 4: Recalculate scientific manpower ---
+        current_upper_df = calculate_upper_tfo_metrics(st.session_state.tfo_input_df)
+
+        st.session_state.full_spinning_df = recalculate_scientific_manpower(
+            st.session_state.full_spinning_df,
+            current_upper_df
+        )
+
 
 with wtt_tab:
-    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Entire WTT Table</div>', unsafe_allow_html=True)
 
-    wtt_df = full_spinning_df[
-        full_spinning_df["Business"].astype(str).str.upper() == "WTT"
-    ][DISPLAY_COLUMNS].copy()
+    wtt_prod = pd.ExcelFile("data/WTT.xlsx")
+    tabs = st.tabs([
+        "Manning",
+        "Weaving Back-Up",
+        "Stenter",
+        "Size Wise Details",
+        "TT Cut&Sew LC",
+        "TT Cut&Sew LH",
+        "DTA",
+        "JUKI"
+    ])
+    with tabs[0]:
+        st.markdown('<div class="section-title">Entire WTT Table</div>', unsafe_allow_html=True)
 
-    if wtt_df.empty:
-        st.info("No WTT data available.")
-    else:
-        st.dataframe(wtt_df, width="stretch", hide_index=True)
+        wtt_df = full_spinning_df[
+            full_spinning_df["Business"].str.upper() == "WTT"
+        ]
+        st.dataframe(wtt_df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    with tabs[1]:
+        df = pd.read_excel(wtt_prod, sheet_name="Weaving Back-Up")
+        st.dataframe(df, width="stretch", hide_index=True)
+
+    with tabs[2]:
+        df = pd.read_excel(wtt_prod, sheet_name="Stenter")
+
+        st.markdown("### Dynamic Shift Planning Based on MT / Day")
+        st.dataframe(df.iloc[1:7, 0:2], width="stretch", hide_index=True)
+
+        st.markdown("#### Per Shift")
+        # df2 = df.iloc[8:13,0:4].rename(columns=df.iloc[8,0:4])
+        st.dataframe(df.iloc[9:13,0:4].rename(columns=df.iloc[8,0:4]), width="stretch", hide_index=True)
+
+    with tabs[3]:
+        df1 = pd.read_excel(wtt_prod, sheet_name="Size_wise_details")
+        df2 = pd.read_excel(wtt_prod, sheet_name="Size_wise_details_summary")
+
+        st.markdown("### Size Wise Details")
+        st.dataframe(df1, width="stretch", hide_index=True)
+
+        st.markdown("### Summary")
+        st.dataframe(df2.iloc[0:10, 0:6], width="stretch", hide_index=True)
+        
+    with tabs[4]:
+        df = pd.read_excel(wtt_prod, sheet_name="TT_Cut&Sew_LC")
+
+        st.markdown("### Table 1")
+        st.dataframe(df.iloc[0:16, 0:10], width="stretch", hide_index=True)
+
+        st.markdown("### Table 2")
+        st.dataframe(df.iloc[16:18, 8:10], width="stretch", hide_index=True)
+
+    with tabs[5]:
+        df = pd.read_excel(wtt_prod, sheet_name="TT_Cut&Sew_LH")
+
+        st.markdown("### Table 1")
+        st.dataframe(df.iloc[0:17, 0:10], width="stretch", hide_index=True)
+
+        st.markdown("### Table 2")
+        st.dataframe(df.iloc[17:20, 8:10], width="stretch", hide_index=True)
+
+    with tabs[6]:
+        df = pd.read_excel(wtt_prod, sheet_name="DTA")
+        st.dataframe(df, width="stretch", hide_index=True)
+
+    with tabs[7]:
+        df = pd.read_excel(wtt_prod, sheet_name="JUKI")
+
+        st.markdown("### Table 1")
+        st.dataframe(df.iloc[0:14, 0:13], width="stretch", hide_index=True)
+
+        st.markdown("### Table 2")
+        st.dataframe(df.iloc[0:9, 13:15], width="stretch", hide_index=True)
+
+    
 
 with rugs_tab:
-    st.markdown('<div class="section-title">Entire Rugs Table</div>', unsafe_allow_html=True)
 
-    rugs_df = full_spinning_df[
-        full_spinning_df["Business"].astype(str).str.strip().str.upper() == "RUGS"
-    ].copy()
+    rugs_sub1 = st.tabs(["Main"])[0]
 
-    if rugs_df.empty:
-        st.info("No Rugs data available.")
-    else:
-        st.dataframe(
-            rugs_df[DISPLAY_COLUMNS],
-            width="stretch",
-            hide_index=True
-        )
+    with rugs_sub1:
+        st.markdown('<div class="section-title">Entire Rugs Table</div>', unsafe_allow_html=True)
+
+        rugs_df = full_spinning_df[
+            full_spinning_df["Business"].str.upper() == "RUGS"
+        ]
+
+        st.dataframe(rugs_df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
