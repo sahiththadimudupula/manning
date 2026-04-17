@@ -60,9 +60,19 @@ def compute_n_shifts(df: pd.DataFrame) -> pd.DataFrame:
 def align_and_validate_schemas(spinning_path, wtt_path, rugs_path):
 
     # --- Load Excel ---
-    spin_df = pd.read_excel(spinning_path, sheet_name="Spinning")
-    wtt_df = pd.read_excel(wtt_path, sheet_name="WTT")
-    rugs_df = pd.read_excel(rugs_path, sheet_name="Rugs")
+    def load_sheet_case_insensitive(path, target_sheet):
+        xls = pd.ExcelFile(path)
+
+        for sheet in xls.sheet_names:
+            if sheet.strip().lower() == target_sheet.lower():
+                return pd.read_excel(xls, sheet_name=sheet)
+
+        raise ValueError(f"{target_sheet} sheet not found in {path}")
+    
+    
+    spin_df = load_sheet_case_insensitive(spinning_path, "Spinning")
+    wtt_df = load_sheet_case_insensitive(wtt_path, "WTT")
+    rugs_df = load_sheet_case_insensitive(rugs_path, "Rugs")
 
     # --- Normalize columns ---
     spin_df = normalize_columns(spin_df)
