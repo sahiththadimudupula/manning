@@ -1322,40 +1322,62 @@ with kpi_col_4:
 st.markdown("</div>", unsafe_allow_html=True)
 
 def render_location_tab(location_name, full_df, source_df, wtt_path=None):
-    if location_name.upper() in ["WFL","HYDERABAD"]:
+    # if location_name.upper() in ["WFL","HYDERABAD"]:
+    #     return
+
+    # display_name = "Hyderabad" if location_name.upper() == "WFL" else location_name
+    # full_df = full_df.copy()
+    # # current change
+    # if location_name.upper() == "ANJAR":
+    #     sub_tabs = st.tabs(["Manpower"])
+    # elif location_name.upper() == "Hyderabad":
+    #     sub_tabs = st.tabs(["Empty"])
+    # else:
+    #     if location_name.upper() == "ANJAR":
+    #         # sub_tabs = st.tabs(["Manpower"])
+    #          st.link_button("Go to Anjar", "https://spinning.streamlit.app/")
+    #     elif location_name.upper() == "Hyderabad":
+    #         sub_tabs = st.tabs(["Empty"])
+    #     else:
+    #         if location_name.upper() in ["ANJAR", "WFL"]:
+    #             sub_tabs = st.tabs(["Manpower"])
+    #         else:
+    #             sub_tabs = st.tabs(["Manpower", "Rugs", "Spinning", "TT"])
+
+    
+
+# -----------------
+# TAB CREATION
+# -----------------
+
+    loc = location_name.upper()
+    if loc == "ANJAR":
+        sub_tabs = st.tabs(["Anjar"])
+    elif loc in ["WFL", "HYDERABAD"]:
+        return
+    else:
+        sub_tabs = st.tabs(["Manpower", "Rugs", "Spinning", "WTT"])
+
+    # -----------------
+    # ANJAR (button only)
+    # -----------------
+    if loc == "ANJAR":
+        with sub_tabs[0]:
+            # st.markdown("### Anjar Module")
+            st.link_button("Go to Anjar", "https://welspunanjar.streamlit.app/")
         return
 
-    display_name = "Hyderabad" if location_name.upper() == "WFL" else location_name
-    full_df = full_df.copy()
-    # current change
-    if location_name.upper() == "ANJAR":
-        sub_tabs = st.tabs(["Manpower"])
-    elif location_name.upper() == "Hyderabad":
-        sub_tabs = st.tabs(["Empty"])
-    else:
-        if location_name.upper() == "ANJAR":
-            sub_tabs = st.tabs(["Manpower"])
-        elif location_name.upper() == "Hyderabad":
-            sub_tabs = st.tabs(["Empty"])
-        else:
-            if location_name.upper() in ["ANJAR", "WFL"]:
-                sub_tabs = st.tabs(["Manpower"])
-            else:
-                sub_tabs = st.tabs(["Manpower", "Rugs", "Spinning", "TT"])
     # -----------------
-    # MANPOWER
+    # VAPI MANPOWER
     # -----------------
     with sub_tabs[0]:
-        if location_name.upper() == "ANJAR":
+    #     if location_name.upper() == "ANJAR":
             # df = full_df[full_df["Location"].str.upper() == "ANJAR"]
             # st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
             # return
 
-            st.link_button("Go to Anjar", "https://example.com/anjar")
-            return
-
-        if location_name.upper() == "WFL":
-            return
+        # if location_name.upper() == "WFL":
+        #     return
 
         df = full_df[full_df["Location"].str.upper() == location_name.upper()]
         st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
