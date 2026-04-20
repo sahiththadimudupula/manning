@@ -1347,8 +1347,11 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
     # -----------------
     with sub_tabs[0]:
         if location_name.upper() == "ANJAR":
-            df = full_df[full_df["Location"].str.upper() == "ANJAR"]
-            st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
+            # df = full_df[full_df["Location"].str.upper() == "ANJAR"]
+            # st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
+            # return
+
+            st.link_button("Go to Anjar", "https://example.com/anjar")
             return
 
         if location_name.upper() == "WFL":
@@ -1380,7 +1383,7 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
     with sub_tabs[2]:
 
         if location_name.upper() == "VAPI":
-            st.link_button("Go to Spinning", "https://example.com/rugs")
+            st.link_button("Go to Spinning", "https://spinning.streamlit.app/")
             
 
         # ✅ define subtabs
