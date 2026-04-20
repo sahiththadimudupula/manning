@@ -1314,20 +1314,47 @@ with kpi_col_4:
 st.markdown("</div>", unsafe_allow_html=True)
 
 def render_location_tab(location_name, full_df, source_df, wtt_path=None):
+    if location_name.upper() in ["WFL","HYDERABAD"]:
+        return
+
+    display_name = "Hyderabad" if location_name.upper() == "WFL" else location_name
     full_df = full_df.copy()
-
-    sub_tabs = st.tabs(["Manpower", "Rugs", "Spinning", "WTT"])
-
+    # current change
+    if location_name.upper() == "ANJAR":
+        sub_tabs = st.tabs(["Manpower"])
+    elif location_name.upper() == "Hyderabad":
+        sub_tabs = st.tabs(["Empty"])
+    else:
+        if location_name.upper() == "ANJAR":
+            sub_tabs = st.tabs(["Manpower"])
+        elif location_name.upper() == "Hyderabad":
+            sub_tabs = st.tabs(["Empty"])
+        else:
+            if location_name.upper() in ["ANJAR", "WFL"]:
+                sub_tabs = st.tabs(["Manpower"])
+            else:
+                sub_tabs = st.tabs(["Manpower", "Rugs", "Spinning", "WTT"])
     # -----------------
     # MANPOWER
     # -----------------
     with sub_tabs[0]:
+        if location_name.upper() == "ANJAR":
+            df = full_df[full_df["Location"].str.upper() == "ANJAR"]
+            st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
+            return
+
+        if location_name.upper() == "WFL":
+            return
+
         df = full_df[full_df["Location"].str.upper() == location_name.upper()]
         st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
 
     # -----------------
     # RUGS
     # -----------------
+
+    if location_name.upper() in ["ANJAR", "WFL"]:
+        return
     with sub_tabs[1]:
         df = full_df[
             (full_df["Location"].str.upper() == location_name.upper()) &
@@ -1338,6 +1365,9 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
     # -----------------
     # SPINNING
     # -----------------
+
+    if location_name.upper() in ["ANJAR", "WFL"]:
+        return
     with sub_tabs[2]:
 
         # ✅ define subtabs
@@ -1586,6 +1616,8 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
     # -----------------
     # WTT
     # -----------------
+    if location_name.upper() in ["ANJAR", "WFL"]:
+        return
     with sub_tabs[3]:
         df = full_df[
             (full_df["Location"].str.upper() == location_name.upper()) &
@@ -1594,7 +1626,7 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
         st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
 
 summary_tab, vapi_tab, anjar_tab, wfl_tab = st.tabs(
-    ["Summary", "Vapi", "Anjar", "WFL"]
+    ["Summary", "Vapi", "Anjar", "Hyderabad"]
 )
 
 with summary_tab:
@@ -1803,7 +1835,7 @@ with anjar_tab:
 # WFL
 # -----------------
 with wfl_tab:
-    render_location_tab("WFL", full_spinning_df, source_spinning_df)
+    render_location_tab("Hyderabad", full_spinning_df, source_spinning_df)
 
 
 # with spinning_tab:
