@@ -13,7 +13,7 @@ from openpyxl.utils import get_column_letter
 from schema_utils import align_and_validate_schemas
 
 st.set_page_config(
-    page_title="Manpower Dashboard",
+    page_title="Manpower Recommendation Engine",
     page_icon="🏭",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -377,6 +377,14 @@ st.markdown(
             backdrop-filter: blur(8px);
         }
 
+        .hero-gradient-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, #1e40af, #2563eb, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+            }
+        
         .hero-title {
             font-size: 1.4rem !important;
             font-weight: 900;
@@ -1267,8 +1275,8 @@ with hero_col_1:
         st.markdown("</div>", unsafe_allow_html=True)
 
 with hero_col_2:
-    st.markdown('<div class="hero-badge">Welspun Smart Operations</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title">Manpower Dashboard</div>', unsafe_allow_html=True)
+    # st.markdown('<div class="hero-badge">Welspun Smart Operations</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-gradient-title">Manpower Recommendation Engine</div>', unsafe_allow_html=True)
     st.markdown(
         """
         <div class="hero-subtitle">
