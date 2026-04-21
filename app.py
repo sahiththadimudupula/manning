@@ -1755,7 +1755,7 @@ with summary_tab:
     else:
         filtered_summary_df = filtered_summary_df.iloc[0:0].copy()
     
-    
+
     summary_total = int(
         round(pd.to_numeric(filtered_summary_df["BE_Final_Manpower"], errors="coerce").fillna(0).sum())
     )
@@ -1775,6 +1775,49 @@ with summary_tab:
             top_row = filtered_summary_df.sort_values("BE_Final_Manpower", ascending=False).iloc[0]
             top_section = f"{top_row['Section']} ({int(top_row['BE_Final_Manpower'])})"
         render_metric_card("Top Section", top_section, "Highest final manpower")
+
+    
+
+    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Summary table</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-subtitle">Section-wise final manpower ready for leadership review and download.</div>',
+        unsafe_allow_html=True,
+    )
+
+    if filtered_summary_df.empty:
+        st.info("No rows to display for the current filter selection.")
+    else:
+        st.dataframe(
+            filtered_summary_df,
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "BE_Final_Manpower": st.column_config.NumberColumn(
+                    "BE_Final_Manpower",
+                    format="%d",
+                )
+            },
+        )
+
+    current_lower_for_download = full_spinning_df.loc[
+        full_spinning_df["Section"].astype(str).str.upper() == "TFO",
+        DISPLAY_COLUMNS,
+    ].copy()
+
+    st.download_button(
+        "Download final Excel",
+        data=create_download_workbook(
+            summary_df=build_summary_table(full_spinning_df),
+            full_spinning_df=full_spinning_df,
+            upper_tfo_df=current_upper_df,
+            lower_tfo_df=current_lower_for_download,
+        ),
+        file_name="Spinning_Manpower_Final.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     chart_col_1, chart_col_2 = st.columns([1.4, 1])
 
@@ -1839,47 +1882,6 @@ with summary_tab:
             st.altair_chart(shift_chart, width="stretch")
 
         st.markdown("</div>", unsafe_allow_html=True)
-
-    # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Summary table</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="section-subtitle">Section-wise final manpower ready for leadership review and download.</div>',
-        unsafe_allow_html=True,
-    )
-
-    if filtered_summary_df.empty:
-        st.info("No rows to display for the current filter selection.")
-    else:
-        st.dataframe(
-            filtered_summary_df,
-            width="stretch",
-            hide_index=True,
-            column_config={
-                "BE_Final_Manpower": st.column_config.NumberColumn(
-                    "BE_Final_Manpower",
-                    format="%d",
-                )
-            },
-        )
-
-    current_lower_for_download = full_spinning_df.loc[
-        full_spinning_df["Section"].astype(str).str.upper() == "TFO",
-        DISPLAY_COLUMNS,
-    ].copy()
-
-    st.download_button(
-        "Download final Excel",
-        data=create_download_workbook(
-            summary_df=build_summary_table(full_spinning_df),
-            full_spinning_df=full_spinning_df,
-            upper_tfo_df=current_upper_df,
-            lower_tfo_df=current_lower_for_download,
-        ),
-        file_name="Spinning_Manpower_Final.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     # ✅ ADD THIS BLOCK
     deviation_df = pd.read_excel("data/deviation.xlsx")
