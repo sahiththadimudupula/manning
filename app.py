@@ -1681,7 +1681,7 @@ with summary_tab:
         unsafe_allow_html=True,
     )
 
-    filter_col_1, filter_col_2, filter_col_3 = st.columns([1, 1, 2])
+    filter_col_1, filter_col_2, filter_col_3, filter_col_4 = st.columns([1, 1, 1.5, 1.5])
 
     with filter_col_1:
         selected_location = st.selectbox(
@@ -1715,6 +1715,25 @@ with summary_tab:
             default=section_options,
         )
 
+        with filter_col_4:
+            designation_options = sorted(
+                summary_df.loc[
+                    (summary_df["Location"] == selected_location)
+                    & (summary_df["Business"] == selected_business)
+                    & (summary_df["Section"].isin(selected_sections)),
+                    "Designation",
+                ]
+                .dropna()
+                .unique()
+                .tolist()
+            )
+
+            selected_designations = st.multiselect(
+                "Designation filter",
+                options=designation_options,
+                default=designation_options,
+            )
+
     st.markdown("</div>", unsafe_allow_html=True)
 
     filtered_summary_df = summary_df.loc[
@@ -1729,6 +1748,14 @@ with summary_tab:
     else:
         filtered_summary_df = filtered_summary_df.iloc[0:0].copy()
 
+    if selected_designations:
+        filtered_summary_df = filtered_summary_df.loc[
+            filtered_summary_df["Designation"].isin(selected_designations)
+        ].copy()
+    else:
+        filtered_summary_df = filtered_summary_df.iloc[0:0].copy()
+    
+    
     summary_total = int(
         round(pd.to_numeric(filtered_summary_df["BE_Final_Manpower"], errors="coerce").fillna(0).sum())
     )
