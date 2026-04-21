@@ -1712,8 +1712,9 @@ with summary_tab:
         selected_sections = st.multiselect(
             "Section filter",
             options=section_options,
-            default=section_options,
         )
+        if not selected_sections:
+            selected_sections = section_options
 
         with filter_col_4:
             designation_options = sorted(
@@ -1731,8 +1732,9 @@ with summary_tab:
             selected_designations = st.multiselect(
                 "Designation filter",
                 options=designation_options,
-                default=designation_options,
             )
+            if not selected_designations:
+                selected_designations = designation_options
 
     st.markdown("</div>", unsafe_allow_html=True)
 
