@@ -1026,7 +1026,7 @@ def recalculate_scientific_manpower(full_df: pd.DataFrame, upper_tfo_df: pd.Data
 
 def build_summary_table(full_spinning_df: pd.DataFrame) -> pd.DataFrame:
     summary_df = full_spinning_df.groupby(
-        ["Location", "Business", "Section"],
+        ["Location", "Business", "Section","Designation"],
         as_index=False,
         dropna=False
     )["BE_Final_Manpower"].sum()
