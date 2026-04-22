@@ -1821,69 +1821,87 @@ with summary_tab:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # -----------------
+    # CHART DATA (locked filters)
+    # -----------------
+
+    # Bar chart → ignore section + designation
+    bar_chart_df = summary_df.loc[
+        (summary_df["Location"] == selected_location)
+        & (summary_df["Business"] == selected_business)
+    ].copy()
+
+    # Pie chart → ignore designation only
+    pie_chart_df = summary_df.loc[
+        (summary_df["Location"] == selected_location)
+        & (summary_df["Business"] == selected_business)
+        & (summary_df["Section"].isin(selected_sections))
+    ].copy()
+
     chart_col_1, chart_col_2 = st.columns([1.4, 1])
 
     with chart_col_1:
         # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown('<div class="section-title">Section-wise final manpower</div>', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="section-subtitle">Quick comparison of final manpower across the selected sections.</div>',
-            unsafe_allow_html=True,
-        )
-
-        if filtered_summary_df.empty:
-            st.info("No sections selected. Please choose one or more sections.")
+        if bar_chart_df.empty:
+            st.info("No data available.")
         else:
+
+            st.markdown(
+                '<div class="small-note">Quick comparison of final manpower across all sections under the selected business.</div>',
+                unsafe_allow_html=True,
+            )
+
+            # st.markdown(
+            #     '<div class="small-note">Shows all sections for the selected Location and Business, independent of section filters.</div>',
+            #     unsafe_allow_html=True,
+            # )
             bar_chart = (
-                alt.Chart(filtered_summary_df)
+                alt.Chart(bar_chart_df)
                 .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
                 .encode(
                     x=alt.X("Section:N", sort="-y", title="Section"),
-                    y=alt.Y("BE_Final_Manpower:Q", title="Final manpower"),
-                    tooltip=["Location", "Business", "Section", "BE_Final_Manpower"],
+                    y=alt.Y("sum(BE_Final_Manpower):Q", title="Final manpower"),
+                    tooltip=[
+                        "Section",
+                        alt.Tooltip("sum(BE_Final_Manpower):Q", title="Final manpower")
+                    ],
                 )
                 .properties(height=360)
             )
             st.altair_chart(bar_chart, width="stretch")
-
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(
+                '<div class="small-note">Shows all sections for the selected Location and Business, independent of section filters.</div>',
+                unsafe_allow_html=True,
+            )
 
     with chart_col_2:
-        # st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown('<div class="section-title">Shift mix</div>', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="section-subtitle">Plant-level shift allocation from the current full table.</div>',
-            unsafe_allow_html=True,
-        )
-
-        shift_summary = pd.DataFrame(
-            {
-                "Shift": ["General", "A", "B", "C"],
-                "Manpower": [
-                    pd.to_numeric(full_spinning_df["General_Shift"], errors="coerce").fillna(0).sum(),
-                    pd.to_numeric(full_spinning_df["Shift_A"], errors="coerce").fillna(0).sum(),
-                    pd.to_numeric(full_spinning_df["Shift_B"], errors="coerce").fillna(0).sum(),
-                    pd.to_numeric(full_spinning_df["Shift_C"], errors="coerce").fillna(0).sum(),
-                ],
-            }
-        )
-
-        if shift_summary["Manpower"].sum() <= 0:
-            st.info("Shift data is not available.")
+        if pie_chart_df.empty:
+            st.info("No data available.")
         else:
-            shift_chart = (
-                alt.Chart(shift_summary)
+            st.markdown(
+                '<div class="small-note">Designation-wise manpower distribution under the seclected sections.</div>',
+                unsafe_allow_html=True,
+            )
+            pie_chart = (
+                alt.Chart(pie_chart_df)
                 .mark_arc(innerRadius=58, outerRadius=108)
                 .encode(
-                    theta=alt.Theta("Manpower:Q"),
-                    color=alt.Color("Shift:N", legend=alt.Legend(orient="bottom")),
-                    tooltip=["Shift", "Manpower"],
+                    theta=alt.Theta("sum(BE_Final_Manpower):Q"),
+                    color=alt.Color(
+                        "Designation:N",
+                        title="Designation",
+                        scale=alt.Scale(scheme="category10")
+                    ),
+                    tooltip=[
+                        "Designation",
+                        alt.Tooltip("sum(BE_Final_Manpower):Q", title="Final manpower")
+                    ],
                 )
                 .properties(height=350)
             )
-            st.altair_chart(shift_chart, width="stretch")
+            st.altair_chart(pie_chart, width="stretch")
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # ✅ ADD THIS BLOCK
     deviation_df = pd.read_excel("data/deviation.xlsx")
