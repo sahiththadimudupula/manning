@@ -1300,9 +1300,9 @@ with kpi_col_1:
 
 with kpi_col_2:
     render_metric_card(
-        "Scientific Manpower",
-        f"{pd.to_numeric(full_spinning_df['BE_Scientific_Manpower'], errors='coerce').fillna(0).sum():,.2f}",
-        "Driven by formulas",
+        "Total Designations",
+        f"{full_spinning_df['Designation'].nunique():,}",
+        "Unique roles across Plants",
     )
 
 with kpi_col_3:
