@@ -1394,7 +1394,7 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
         # ]
         # st.dataframe(df[DISPLAY_COLUMNS], width="stretch", hide_index=True)
          if location_name.upper() == "VAPI":
-            st.link_button("Go to Rugs", "https://example.com/rugs")
+            st.link_button("Go to Rugs", "https://rugsvapi.streamlit.app/")
             
 
     # -----------------
