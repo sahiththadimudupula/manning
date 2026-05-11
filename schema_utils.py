@@ -30,7 +30,15 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 # Compute N_shifts
 # -------------------------------
 def compute_n_shifts(df: pd.DataFrame) -> pd.DataFrame:
+
     def calc(row):
+
+        # Preserve existing N_shifts from source file
+        existing = row.get("N_shifts")
+
+        if pd.notna(existing) and str(existing).strip() not in ["", "0", "0.0"]:
+            return existing
+
         g = float(row.get("General_Shift", 0) or 0)
         a = float(row.get("Shift_A", 0) or 0)
         b = float(row.get("Shift_B", 0) or 0)
@@ -51,8 +59,8 @@ def compute_n_shifts(df: pd.DataFrame) -> pd.DataFrame:
         return max(1, active)
 
     df["N_shifts"] = df.apply(calc, axis=1)
-    return df
 
+    return df
 
 # -------------------------------
 # Main function
