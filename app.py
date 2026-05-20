@@ -1334,6 +1334,7 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
 
     elif loc == "HYDERABAD":
         sub_tabs = st.tabs(["Manpower"])
+        pass
 
     else:
         sub_tabs = st.tabs(["Manpower", "Rugs", "Spinning", "WTT"])
@@ -1414,6 +1415,10 @@ def render_location_tab(location_name, full_df, source_df, wtt_path=None):
     # HYDERABAD ONLY HAS MANPOWER TAB
     # -----------------
     if loc == "HYDERABAD":
+        st.link_button(
+                "Go to Hyderabad",
+                "https://hyderabadmanning.streamlit.app/"
+            )
         return
 
     # -----------------
